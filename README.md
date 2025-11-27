@@ -13,7 +13,7 @@ You can interact with the deployed model here:
 *(Hosted via Render — may take ~20 seconds to wake up if idle.)*
 
 <p align="left">
-  <a href="https://ie-mlops-nyc-taxis-98u4.onrender.com/" target="_blank">
+  <a href="https://ie-mlops-nyc-taxis-98u4.onrender.com/docs" target="_blank">
     <img src="https://img.shields.io/badge/Live_Demo-Visit_App-38bdf8?style=for-the-badge" />
   </a>
 </p>
