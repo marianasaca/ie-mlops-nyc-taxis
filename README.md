@@ -7,6 +7,12 @@ This project was completed as part of an MLOps module in the IE Master’s in Bu
 
 ---
 
+### 🚀 Live Demo  
+You can interact with the deployed model here:  
+👉 **https://ie-mlops-nyc-taxis-98u4.onrender.com/**  
+*(Hosted via Render — may take ~20 seconds to wake up if idle.)*
+
+
 ## 📌 Project Overview
 
 The goal of this project is to:
