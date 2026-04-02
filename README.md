@@ -1,175 +1,152 @@
-# 🚕 NYC Taxi Trip Duration – MLOps Pipeline
+# NYC Airbnb Price Prediction — End-to-End MLOps Pipeline
 
-This project implements a full **end-to-end MLOps workflow** for predicting NYC taxi trip durations.  
-It covers the complete machine learning lifecycle — from experimentation to deployment, monitoring, and CI/CD automation — following industry standards and best practices.
+An end-to-end MLOps project that predicts nightly Airbnb listing prices in New York City, covering every stage from exploratory analysis through deployment, monitoring, and CI/CD.
 
-This project was completed as part of an MLOps module in the IE Master’s in Business Analytics & Big Data.
-
----
-
-### 🚀 Live Demo  
-You can interact with the deployed model here:  
-👉 https://ie-mlops-nyc-taxis-98u4.onrender.com/  
-*(Hosted via Render — may take ~20 seconds to wake up if idle.)*
-
-<p align="left">
-  <a href="https://ie-mlops-nyc-taxis-98u4.onrender.com/docs" target="_blank">
-    <img src="https://img.shields.io/badge/Live_Demo-Visit_App-38bdf8?style=for-the-badge" />
-  </a>
-</p>
+**Author:** Mariana Saca
+**Context:** Master in Business Analytics & Data Science, IE University
 
 ---
 
-## 📌 Project Overview
+## Project Overview
 
-The goal of this project is to:
+Setting the right nightly price is one of the hardest decisions for Airbnb hosts. This project builds a machine learning pipeline that predicts listing prices using features like neighborhood, room type, availability, and review activity. Beyond the model itself, the focus is on **operationalizing** the workflow: experiment tracking with MLflow, serving predictions via a REST API, simulating live traffic for monitoring, containerizing with Docker, and automating quality checks with GitHub Actions.
 
-- Build and track machine learning experiments  
-- Create modular, reproducible training pipelines  
-- Deploy a model as a service  
-- Monitor model performance over time  
-- Automate workflows using CI/CD  
-- Apply modern MLOps tooling and engineering practices
+### Dataset
 
-The project uses the **NYC Taxi Trip Duration dataset** and predicts how long a taxi trip will take based on pickup/dropoff metadata, location features, and engineerd variables.
+[AB_NYC_2019.csv](http://insideairbnb.com/) — ~49,000 Airbnb listings in New York City with features including neighborhood group, room type, price, minimum nights, number of reviews, and availability.
 
 ---
 
-## 🧱 Architecture & Workflow
+## Pipeline Stages
 
-This repository follows a **modular folder structure**, aligned with each MLOps stage:
+The project is organized into sequential stages, each in its own directory:
 
-ie-mlops-nyc-taxis/
-│
-├── 01-initial-notebook/ # Exploratory analysis, baseline model
-├── 02-data-sampling-features/ # Feature engineering and dataset preparation
-├── 03-experiment-tracking/ # MLflow experiment logging & model registry
-├── 04-deployment/ # Model deployment (e.g. FastAPI / Docker)
-├── 05-monitoring/ # Data drift + prediction monitoring (e.g. Evidently)
-├── 06-cicd/ # CI/CD automation via GitHub Actions
-│
-├── .github/workflows/ # CI/CD workflows
-├── requirements.txt # Python dependencies
-├── .flake8 # Linting configuration
-└── .gitignore
-
-
-Each module is self-contained and reflects a real-world ML engineering workflow.
+| Stage | Directory | What It Does |
+|---|---|---|
+| **EDA** | `01-notebook/` | Exploratory data analysis — distributions, correlations, outlier detection |
+| **Feature Engineering** | `02-features/` | Data cleaning, encoding, and feature creation |
+| **Experiment Tracking** | `03-experiment-tracking/` | Model training with MLflow logging (parameters, metrics, artifacts) |
+| **Deployment** | `04-deployment/` | FastAPI REST API that loads the trained model from MLflow |
+| **Monitoring** | `05-monitoring/` | Simulates live predictions and generates an HTML monitoring report |
+| **CI/CD** | `06-cicd/` | Dockerfile + GitHub Actions workflow (linting and syntax checks) |
 
 ---
 
-## 🧪 1. Experiment Tracking (MLflow)
+## Quick Start
 
-In `03-experiment-tracking/`, the project uses **MLflow** to:
+### Prerequisites
 
-- Log parameters, metrics, and artifacts  
-- Compare models (Linear Regression, Random Forest, etc.)  
-- Store trained models in the MLflow Model Registry  
-- Track reproducible experiment history
+- Python 3.9+
+- pip
 
-This enables transparent experiment management across the team.
+### Setup
 
----
+```bash
+git clone https://github.com/marianasaca/mlops-nyc-airbnb.git
+cd mlops-nyc-airbnb
+pip install -r requirements.txt
+```
 
-## 🛠 2. Feature Engineering & Data Preparation
+### Train the Model
 
-The `02-data-sampling-features/` section includes:
+```bash
+cd 04-deployment
+python train.py
+```
 
-- Train/validation/test splits  
-- Categorical encoding  
-- Geolocation feature engineering  
-- Outlier filtering  
-- Pipeline building for preprocessing  
+This trains the model, logs the experiment to MLflow, and writes a `run_id.txt` file that the API uses to load the correct model artifact.
 
-A clean dataset is exported for training and deployment.
+### Start the API
 
----
+```bash
+cd 04-deployment
+uvicorn app:app --reload
+```
 
-## 🚀 3. Model Deployment
+The API will be available at `http://localhost:8000`. Interactive docs are at `/docs`.
 
-The `04-deployment/` module showcases:
+### Make a Prediction
 
-- Packaging the trained model  
-- Building an API endpoint for predictions (e.g., using FastAPI or Flask)  
-- Dockerizing the service  
-- Running it locally using Docker  
+Send a POST request to the `/predict` endpoint:
 
-This simulates real-world model serving infrastructure.
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "neighbourhood_group": "Manhattan",
+    "neighbourhood": "Harlem",
+    "room_type": "Private room",
+    "minimum_nights": 3,
+    "number_of_reviews": 25,
+    "availability_365": 200
+  }'
+```
 
----
+> **Note:** Verify the exact field names and required inputs against `app.py` — adjust the example above if your schema differs.
 
-## 📈 4. Model Monitoring (EvidentlyAI)
+### Run Monitoring
 
-The `05-monitoring/` module adds:
+```bash
+cd 05-monitoring
+python simulate.py   # sends ~100 requests to the API, logs results to predictions.csv
+python monitor.py    # generates an HTML monitoring report from logged predictions
+```
 
-- Data drift detection  
-- Prediction drift monitoring  
-- Metric tracking  
-- Dashboard/report generation  
+### Run with Docker
 
-This ensures the model continues performing well in production.
-
----
-
-## 🔁 5. CI/CD Pipeline (GitHub Actions)
-
-The `06-cicd/` section configures:
-
-- Automated linting (`flake8`)  
-- Automated testing  
-- Build & deployment pipelines  
-- Continuous integration workflows  
-
-This enforces engineering best practices and ensures reliability.
-
----
-
-## 🧰 Tech Stack
-
-**MLOps Tools**
-- MLflow  
-- Docker  
-- GitHub Actions  
-- EvidentlyAI
-
-**Python Libraries**
-- pandas  
-- scikit-learn  
-- numpy  
-- joblib  
-
-**Engineering**
-- FastAPI / Flask (depending on module)  
-- Linting: flake8  
-- CI/CD: GitHub Actions  
+```bash
+cd 06-cicd
+docker build -t airbnb-api .
+docker run -p 8000:8000 airbnb-api
+```
 
 ---
 
-## ⭐ Key Skills Demonstrated
+## Project Structure
 
-- End-to-end ML pipeline development  
-- Experiment tracking & model registry  
-- Modular engineering design  
-- Production-ready model deployment  
-- Monitoring for drift/performance degradation  
-- CI/CD pipelines for ML  
-- Dockerization & containerized workflows  
-- Collaborative ML development at scale  
+```
+mlops-nyc-airbnb/
+├── 01-notebook/                 # Exploratory data analysis
+├── 02-features/                 # Feature engineering scripts
+├── 03-experiment-tracking/      # MLflow experiment tracking
+├── 04-deployment/
+│   ├── train.py                 # Train model, log to MLflow, write run_id.txt
+│   ├── app.py                   # FastAPI app — loads model and serves /predict
+│   └── test_api.py              # Optional API integration tests
+├── 05-monitoring/
+│   ├── simulate.py              # Simulate ~100 live prediction requests
+│   ├── monitor.py               # Generate HTML monitoring report
+│   └── data/
+│       └── predictions.csv      # Logged prediction results
+├── 06-cicd/
+│   └── Dockerfile               # Docker image for the FastAPI service
+├── .github/
+│   └── workflows/
+│       └── ci.yml               # GitHub Actions CI (lint + syntax checks)
+├── data/
+│   └── AB_NYC_2019.csv          # Airbnb NYC 2019 dataset
+├── requirements.txt
+└── README.md
+```
 
 ---
 
-## 👩‍💻 Author
+## Tech Stack
 
-**Mariana Saca**  
-Data Analyst | Python | SQL | Machine Learning | MLOps  
-- LinkedIn: https://www.linkedin.com/in/marianasaca/  
-- GitHub: https://github.com/marianasaca  
-
-📧 **msaca16@gmail.com**
+- **ML & Data:** Python, Pandas, NumPy, Scikit-Learn
+- **Experiment Tracking:** MLflow
+- **API:** FastAPI, Uvicorn
+- **Monitoring:** Custom HTML report (no external monitoring framework)
+- **Containerization:** Docker
+- **CI/CD:** GitHub Actions
 
 ---
 
-## 📎 Notes
+## Things to Verify Before Pushing
 
-This project was created as part of the **IE University MBD: Big Data & AI in Operations** course on MLOps.  
-It represents a real-world ML engineering workflow, implemented in a modular, scalable structure.
+A few details I couldn't confirm from the repo listing alone — double-check these match your actual code:
+
+- [ ] **Model type** — is it Random Forest, Gradient Boosting, or something else? If you want to mention the algorithm and any key metrics (MAE, RMSE, R²), add a "Model Performance" section.
+- [ ] **API request schema** — the curl example above is a guess based on common columns in AB_NYC_2019.csv. Verify the exact field names in `app.py`.
+- [ ] **Python version** — I wrote 3.9+ but confirm against what you actually used.
+- [ ] **Dataset path** — I assumed `data/AB_NYC_2019.csv` based on the original README. Confirm it lives there.
